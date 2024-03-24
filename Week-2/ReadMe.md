@@ -2,6 +2,8 @@
 
 ## Task - Weekend Project
 
+> https://docs.google.com/document/d/13NCKkW6ybxVSGTfhlt_uUJ9cXwyaZsNuuG9Livm448o/edit?usp=sharing
+
 ### This is a group activity for at least 3 students:
 
 - Develop and run scripts for “Ballot.sol” within your group to give voting rights, casting votes, delegating votes and querying results
@@ -11,4 +13,11 @@
 
 
 ## Team
+- @msstvv
+- @Kehinde Browns
+- @Koha
+- @osas2211
+- @ozzy
+- @ioannis71
+- @Andrei Ope
  
