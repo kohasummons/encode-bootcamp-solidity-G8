@@ -37,12 +37,14 @@ export class AppController {
   }
 
   @Get('check-minter-role')
-  checkMinterRole(@Query('address') address: string) {
-    return { result: this.appService.checkMinterRole(address) };
+  checkMinterRole() {
+    return { result: this.appService.checkMinterRole() };
   }
 
   @Post('mint-tokens')
   async mintTokens(@Body() body: MintTokenDto) {
-    return { result: this.appService.mintTokens(body.address) };
+    return {
+      result: this.appService.mintTokens(body.address, body.amountToMint),
+    };
   }
 }

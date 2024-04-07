@@ -8,24 +8,30 @@ import {
   formatEther,
   http,
 } from 'viem';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppService {
-  publicClient;
-  walletClient;
+  publicClient: any;
+  walletClient: any;
+  contractAddress: `0x${string}`;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
+    this.configService = configService;
+
     const rpcEndpointUrl = process.env.RPC_ENDPOINT_URL;
     const transport = http(rpcEndpointUrl);
 
     this.publicClient = createPublicClient({
       chain: chains.sepolia,
-      transport: transport,
+      transport: http(this.configService.get<string>('RPC_ENDPOINT_URL')),
     });
     this.walletClient = createWalletClient({
+      key: this.configService.get<string>('DEPLOYER_PRIVATE_KEY'),
+      transport: http(this.configService.get<string>('RPC_ENDPOINT_URL')),
       chain: chains.sepolia,
-      transport: http(process.env.PRIVATE_KEY),
     });
+    this.contractAddress = `0x${this.configService.get<`0x${string}`>('MY_TOKEN_ADDRESS')}`;
   }
 
   async getTokenName(): Promise<any> {
@@ -36,8 +42,8 @@ export class AppService {
     });
   }
 
-  getContractAddress(): string {
-    return '0x7a9cf487143827659caE112e55f08a2F6975e058';
+  getContractAddress(): `0x${string}` {
+    return this.contractAddress;
   }
 
   async getTotalSupply() {
@@ -74,14 +80,30 @@ export class AppService {
   }
 
   async getServerWalletAddress() {
-    return await this.walletClient.getAddress();
+    return this.walletClient.account ? this.walletClient.account.address : '';
   }
 
-  mintTokens(address: any) {
-    return `Minting tokens for ${address}`;
+  async mintTokens(address: `0x${string}`, amountToMint: bigint) {
+    const deployer = this.walletClient;
+    const mintTx = await deployer.writeContract({
+      address: this.contractAddress,
+      abi: tokenJson.abi,
+      functionName: 'mint',
+      args: [address, amountToMint],
+    });
+    const receipt = await this.publicClient.waitForTransactionReceipt({
+      hash: mintTx,
+    });
+    return receipt;
   }
 
-  checkMinterRole(address: string) {
-    throw new Error(`${address} Method not implemented.`);
+  async checkMinterRole() {
+    const minterRole = await this.publicClient.readContract({
+      address: this.contractAddress,
+      abi: tokenJson.abi,
+      functionName: 'MINTER_ROLE',
+      args: [],
+    });
+    return minterRole;
   }
 }
